@@ -109,3 +109,49 @@ spec:
             - ssd
 -----------------------------------------------------------------------------------
 
+Pod Affinity
+-----------------------------------------------------------------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: anti-ng-pod
+spec:
+  containers:
+  - name: nginx-ctr
+    image: nginx
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - pa-nginx-app
+        topologyKey: kubernetes.io/hostname
+
+----------------------------------------------------------------------------------------
+Pod Anti Affinity
+----------------------------------------------------------------------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: anti-ng-pod
+spec:
+  containers:
+  - name: nginx-ctr
+    image: nginx
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - pa-nginx-app
+        topologyKey: kubernetes.io/hostname
+
+-----------------------------------------------------------------------------------------
+https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+-----------------------------------------------------------------------------------------
