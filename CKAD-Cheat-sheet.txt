@@ -11,6 +11,8 @@ Task 1: Launching Instances on AWS
 
 #3 VMs
 
+#ubuntu- free tier
+
 #Instance type t2.medium
 
 #Instead of opening all ports you can open these ports internally.
@@ -39,7 +41,7 @@ wget https://ckad.s3.ap-northeast-1.amazonaws.com/kubeadm-setup.sh
 
 #OR
 #Create kubeadm.sh script file
-vi kubeadm.sh
+vi kubeadm-setup.sh
 ------------------------------------------------------------------------------------
 #!/bin/bash
 sudo apt-get update
@@ -136,6 +138,7 @@ Task 5: Deploy Container Networking Interface
 
 ----------------------------------------------------------------------- 
 # Apply weave CNI (Container Network Interface) as shown below:
+
 kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 
 (reference link1:- https://www.weave.works/docs/net/latest/kubernetes/kube-addon/)
@@ -211,18 +214,18 @@ spec:
         - echo HELLO WORLD !!!!!
       restartPolicy: Never
 
-kubectl create -f job.yaml
+kubectl create -f job-pod.yaml
 kubectl get jobs
 kubectl get pods
 
 read logs 
-kubectl logs jobs-hello-7cfn2 
+kubectl logs <name of jobpod>
 HELLO WORLD !!!!!
 
 Describe job to see
 kubectl describe jobs jobs-hello
 
-kubectl delete -f job.yaml
+kubectl delete -f job-pod.yaml
 -----------------------------------------------------------------------
 Task 2: Cronjobs 
 -----------------------------------------------------------------------
@@ -264,7 +267,7 @@ Hello World!
 
 ==============================================================================
 
-Lab 2: Sidecar container and Patterns
+Lab 3: Sidecar container and Patterns
 
 Task: 1 sidecar container
 
@@ -641,6 +644,11 @@ spec:
     - secretRef:
         name: mysql-credentials
 
+kubectl exec -it secret-pod -- bash
+printenv
+echo $rootpw
+
+
 =====================================================================================
 Lab 8: Resource Quotas in Kubernetes
 -------------------------------------------------
@@ -880,9 +888,9 @@ Task 2: Using WordPress and MySQL as Deployments(skip)
 --------------------------------------------------------
 kubectl create ns networkdemo 
 
-kubectl create -f http://files.cloudthat.training/devops/kubernetes-cka/mysql_deploy.yaml -n networkdemo
+kubectl create -f https://s3.ap-south-1.amazonaws.com/files.cloudthat.training/devops/kubernetes-cka/mysql_deploy.yaml -n networkdemo
 
-kubectl create -f http://files.cloudthat.training/devops/kubernetes-cka/wordpress_deploy.yaml -n networkdemo
+kubectl create -f https://s3.ap-south-1.amazonaws.com/files.cloudthat.training/devops/kubernetes-cka/wordpress_deploy.yaml -n networkdemo
 
 kubectl get pod,svc -n networkdemo 
 
