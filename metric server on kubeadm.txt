@@ -1,0 +1,24 @@
+#Install metrics server on kubeadm cluster
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+#Edit deployment metrics-server in namespace kube-system
+
+kubectl -n kube-system edit deployment metrics-server
+
+#In the above yaml file
+Delete liveness probe
+Delete readiness probe
+
+#Add the below line in container args
+- --kubelet-insecure-tls
+Save using :wq
+
+#Check the status of the metrics server
+kubectl -n kube-system get po
+
+#Run the below commands to user metric server
+
+kubectl top node
+kubectl top pod
+kubectl top pod -l name=overloaded-cpu
