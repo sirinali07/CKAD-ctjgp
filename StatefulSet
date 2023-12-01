@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sts-svc
+  labels:
+    app: sts-svc
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None   #Headless Service
+  selector:
+    app: ng-sts
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sts-web
+spec:
+  selector:
+    matchLabels:
+      app: ng-sts # has to match .spec.template.metadata.labels
+  serviceName: "sts-svc"
+  replicas: 3 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: ng-sts # has to match .spec.selector.matchLabels
+    spec:
+      containers:
+      - name: ng-str
+        image: registry.k8s.io/nginx-slim:0.8
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 300Mi
+
+  ----------------------------------------------------------------------------------------------------------------------------------------
+  kubectl get sts
+  kubectl describe sts sts-web
+ kubectl get po
+kubectl delete po sts-web-1
+kubectl get svc
+kubectl run test-pod --rm --restart Never -it --image busybox
+nslookup sts-svc
+nslookup 192.168.1.12
+exit
