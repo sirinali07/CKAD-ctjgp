@@ -1,0 +1,77 @@
+#from root user
+# create user and set password
+adduser sirin
+passwd sirin
+#Login to the created user
+su sirin -
+cd /home/sirin/
+pwd
+#try to run kubectl command and you will see error 
+kubectl get pod
+#create directory for saving .crt , .csr ,and .key files
+mkdir cert && cd cert
+
+#Generate private key for user
+openssl genrsa -out sirin.key 2048
+#Create csr for user and group
+openssl req -new -key sirin.key -out sirin.csr -subj "/CN=sirin/O=finance"
+
+#login with root user again and run the following command
+cd /home/sirin/cert/
+openssl x509 -req -in sirin.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out sirin.crt -days 500
+#change mode of file because it is created by root
+chown sirin:sirin sirin.crt
+
+#get back to sirin user
+#set credentials for user 
+kubectl config set-credentials sirin --client-certificate=/home/sirin/cert/sirin.crt --client-key=/home/sirin/cert/sirin.key
+cat /home/sirin/.kube/config
+
+##manual set context name "sirin-context"
+vi /home/sirin/.kube/config
+#set context by using following command
+kubectl config set-context sirin-context --cluster kubernetes --user sirin
+kubectl config get-contexts
+
+
+#copy cluster-authority-data and paste it into config file of sirin user
+vi ~/.kube/config 
+vi /home/sirin/.kube/config
+-----------------------------------------
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJek1EVXhOREV6TVRZeU1Gb1hEVE16TURVeE1URXpNVFl5TUZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBSzdzCnpZdUwzK3NvNkxUMU9wTHVCSnluRVNjRFlXejI3MVFQQ09seG9jT0llYlFoWkp2MHJqU2JuQktxVG41Zk9hZzkKS1JoRGdtQndBQ1JEZVg1OTh6UTMyOW13SVBFS2NZdUg4SkpDUVJTTGI2VDdDbEFCRkpFallzV0hUSjZjd1JyNgp5U1FSb1dtblMxYWFtdnRmNXVEdTVSUGVsaXF5NjNWQ1hDanoxNHZ6V2R2azdiUkdMYlBXdW9OMXlSRTR5YkJ1CkZBak5vRjNTb08reTF3dkFBZVpxeHpqMXArN0hCeSsrajc5by9kdExMamg3MWNrRGJqcFNKRWUyL0U0eWc5OHUKcVZjQXhZc0toTVRTRTNvSmtxQ25UNDRJSnNqdkF4Wnl3L05Xd0RQMUlXVlhpUE1Sb1hyWEZwdnBiSWN2V2luLwovMHg2TUNiTnlhMXhQdTJCZXhjQ0F3RUFBYU5aTUZjd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZGRUtDRG81aU9jYU5YbU5BOThyUnZ4K2pxS3BNQlVHQTFVZEVRUU8KTUF5Q0NtdDFZbVZ5Ym1WMFpYTXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBRUpGTko5WGNoZzgzQ0xPbnplQQpPR1BEU2V4SFFOOFhKZkJMTTlGZE1Lb0k4UVBQditLU0RlM3Nsai9VbmZEMDY1WDlzWTIxT1kxVjB0RExzNGc2Ckhlczh3NUlLSHh3MnE1SnhvbTNTL2MxLytjaDZKZjFhWHJDci8zKzRHYkpuZHNLMktNVUg4Yi9wNUpwdDVBWEwKWGZnRTZvWEtoVzg4V3lPZk91SDlyaytNY3FXZGhmejFBSUI2cEcveGx2NENHQTFzUzlJQWpkRzFmMXRiL1IzWgpsNGZTWEl5SnFXUkhkeFBuVHhVbjFWTktGdGp5R3lLVThBYmZXUm8vMVlWWFY1Wmt6QU9GTjB6RWh0SERZNnloCm1ZN1FiZlFpbGxTVkFTaWpzdUd4WXZRb09mdGxoTEl0YkVaVjFqclMyNWwyNUFhY2sxOC9jeUs2RzBiK0dlT2sKMWtNPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    server: https://172.31.11.10:6443
+  name: kubernetes
+
+-----------------------------------------
+
+#get back to sirin user
+#run following command to check API authentication
+kubectl get node
+#you will see error "forbidden", means user is not allow to check or create any resources
+
+#now go to the root user again and create role and role binding for user
+
+#create namepsace
+kubectl create ns devops
+
+#create pod
+kubectl -n devops run ng-pod --image=nginx --port=80
+
+#create role
+kubectl -n devops create role sirin-role --verb=list,create,delete --resource=pod,services
+
+#create roleBinding
+kubectl -n devops create rolebinding dev-rb --role=sirin-role --user=sirin
+kubectl -n devops describe role,rolebinding
+
+ 
+#run the following commands by sirin user
+kubectl get pod -n devops
+kubectl -n devops run pod-1 image=nginx --port 80 --expose 80
+kubectl get pod -n devops
+kubectl -n devops describe po pod-1
+kubectl -n devops run pod-2 --image=httpd --port 80  --expose 80
+kubectl get svc -n devops
