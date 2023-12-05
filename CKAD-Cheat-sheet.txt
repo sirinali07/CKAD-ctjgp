@@ -1055,7 +1055,7 @@ Remove node label
 kubectl label nodes <node_name> disktype-
 deploy same pod again it is getting deployed
 
-Task 2: required during scheduling
+Task 1.2: required during scheduling
 
 remove label first 
 kubectl label nodes <node_name> disktype-
