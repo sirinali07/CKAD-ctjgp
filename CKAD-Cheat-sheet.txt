@@ -1111,7 +1111,7 @@ kubectl create -f depend-pod.yaml
 kubectl get pods
 
 ---------------------------------------------------------------------
-Task 3: create pod with pod affinity
+Task 2.1: create pod with pod affinity
 ---------------------------------------------------------------------
 vi aff-pa-pod2.yaml
 
@@ -1140,7 +1140,7 @@ kubectl get pods -o wide
 both pod are in same node
 
 ---------------------------------------------------------------------
-Task 4: pod anti affinity
+Task 2.2: pod anti affinity
 ---------------------------------------------------------------------
 
 vi pod-antiaff.yaml
