@@ -1,0 +1,43 @@
+
+kubectl taint node worker1 app=webapp:NoSchedule
+ 
+kubectl describe node worker1 | grep -i taint
+
+
+--------------------------------------------------------- 
+vi pod.yaml
+apiVersion: v1
+
+kind: Pod
+
+metadata:
+
+  labels:
+
+    run: taint-pod-2
+
+  name: taint-pod-2
+
+spec:
+
+  tolerations:
+
+  - key: "app"
+
+    operator: "Equal"
+
+    value: "webapp"
+
+    effect: "NoSchedule"
+
+  containers:
+
+  - image: nginx
+
+    name: taint-pod-ctr
+
+    ports:
+
+    - containerPort: 80
+--------------------------------------------------------------------
+kubectl get pod -o wide
